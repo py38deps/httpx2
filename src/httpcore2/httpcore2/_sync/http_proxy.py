@@ -24,8 +24,8 @@ from .connection_pool import ConnectionPool
 from .http11 import HTTP11Connection
 from .interfaces import ConnectionInterface
 
-ByteOrStr = bytes | str
-HeadersAsSequence = typing.Sequence[tuple[ByteOrStr, ByteOrStr]]
+ByteOrStr = typing.Union[bytes, str]
+HeadersAsSequence = typing.Sequence[typing.Tuple[ByteOrStr, ByteOrStr]]
 HeadersAsMapping = typing.Mapping[ByteOrStr, ByteOrStr]
 
 

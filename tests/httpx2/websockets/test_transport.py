@@ -73,10 +73,7 @@ class TestASGIWebSocketAsyncNetworkStream:
                 received_messages.append(message)
 
         connection = wsproto.connection.Connection(wsproto.connection.CLIENT)
-        async with (
-            create_task_group() as tg,
-            ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _),
-        ):
+        async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _):
             text_event = wsproto.events.TextMessage("CLIENT_MESSAGE")
             await stream.write(connection.send(text_event))
 
@@ -102,10 +99,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             await receive()
 
         connection = wsproto.connection.Connection(wsproto.connection.CLIENT)
-        async with (
-            create_task_group() as tg,
-            ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _),
-        ):
+        async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _):
             with pytest.raises(UnhandledWebSocketEvent):
                 ping_event = wsproto.events.Ping(b"PING")
                 await stream.write(connection.send(ping_event))
@@ -119,10 +113,7 @@ class TestASGIWebSocketAsyncNetworkStream:
 
         connection = wsproto.connection.Connection(wsproto.connection.CLIENT)
         events = []
-        async with (
-            create_task_group() as tg,
-            ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _),
-        ):
+        async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _):
             for _ in range(3):
                 data = await stream.read(4096)
                 connection.receive_data(data)
@@ -139,10 +130,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             await send({"type": "websocket.accept"})
             await send({"type": "websocket.foo"})
 
-        async with (
-            create_task_group() as tg,
-            ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _),
-        ):
+        async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _):
             with pytest.raises(UnhandledASGIMessageType):
                 await stream.read(4096)
 
@@ -151,10 +139,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             await send({"type": "websocket.accept"})
             await receive()
 
-        async with (
-            create_task_group() as tg,
-            ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _),
-        ):
+        async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _):
             with pytest.raises(RuntimeError, match="context manager twice"):
                 async with stream:
                     pass  # pragma: no cover
@@ -164,10 +149,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             await send({"type": "websocket.close", "code": 1000, "reason": ""})
 
         with pytest.raises(ExceptionGroup) as excinfo:
-            async with (
-                create_task_group() as tg,
-                ASGIWebSocketAsyncNetworkStream(app, scope, tg),
-            ):
+            async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg):
                 pass  # pragma: no cover
         assert excinfo.group_contains(WebSocketDisconnect)
 
@@ -177,10 +159,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             await send({"type": "websocket.http.response.body", "body": b"Unauthorized"})
 
         with pytest.raises(ExceptionGroup) as excinfo:
-            async with (
-                create_task_group() as tg,
-                ASGIWebSocketAsyncNetworkStream(app, scope, tg),
-            ):
+            async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg):
                 pass  # pragma: no cover
         assert excinfo.group_contains(WebSocketUpgradeError)
         error = excinfo.value.exceptions[0]
@@ -193,10 +172,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             raise Exception("Error")
 
         with pytest.raises(ExceptionGroup) as excinfo:
-            async with (
-                create_task_group() as tg,
-                ASGIWebSocketAsyncNetworkStream(app, scope, tg),
-            ):
+            async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg):
                 pass  # pragma: no cover
         assert excinfo.group_contains(WebSocketDisconnect)
         error = excinfo.value.exceptions[0]
@@ -209,10 +185,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             return
 
         with pytest.raises(ExceptionGroup) as excinfo:
-            async with (
-                create_task_group() as tg,
-                ASGIWebSocketAsyncNetworkStream(app, scope, tg),
-            ):
+            async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg):
                 pass  # pragma: no cover
 
         assert excinfo.group_contains(RuntimeError)
@@ -223,10 +196,7 @@ class TestASGIWebSocketAsyncNetworkStream:
             await receive()
             raise Exception("App error")
 
-        async with (
-            create_task_group() as tg,
-            ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _),
-        ):
+        async with create_task_group() as tg, ASGIWebSocketAsyncNetworkStream(app, scope, tg) as (stream, _):
             await stream._send_queue.aclose()
             await stream.send({"type": "websocket.receive", "text": "trigger"})
 

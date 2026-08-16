@@ -57,10 +57,9 @@ def test_connection_pool_with_keepalive() -> None:
         assert repr(pool) == "<ConnectionPool [Requests: 0 active, 0 queued | Connections: 0 active, 1 idle]>"
 
         # Sending a request to a different origin will not reuse the existing IDLE connection.
-        with (
-            pool.stream("GET", "http://example.com/") as response_1,
-            pool.stream("GET", "http://example.com/") as response_2,
-        ):
+        with pool.stream("GET", "http://example.com/") as response_1, pool.stream(
+            "GET", "http://example.com/"
+        ) as response_2:
             info = [repr(c) for c in pool.connections]
             assert info == [
                 "<HTTPConnection ['https://example.com:443', HTTP/1.1, IDLE, Request Count: 2]>",

@@ -5,6 +5,7 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main", "version-*"]
+  workflow_dispatch:   # manual trigger button on GitHub Actions page
 
 permissions:
   contents: read
@@ -15,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
@@ -43,6 +45,13 @@ jobs:
 
       - name: Enforce coverage
         run: scripts/coverage
+
+      - name: Upload dist
+        if: matrix.python-version == '3.15'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
 
   check:
     if: always()

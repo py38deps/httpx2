@@ -11,10 +11,10 @@ from ._utils import safe_async_iterate
 # Functions for typechecking...
 
 
-ByteOrStr = bytes | str
-HeadersAsSequence = typing.Sequence[tuple[ByteOrStr, ByteOrStr]]
+ByteOrStr = typing.Union[bytes, str]
+HeadersAsSequence = typing.Sequence[typing.Tuple[ByteOrStr, ByteOrStr]]
 HeadersAsMapping = typing.Mapping[ByteOrStr, ByteOrStr]
-HeaderTypes = HeadersAsSequence | HeadersAsMapping | None
+HeaderTypes = typing.Union[HeadersAsSequence, HeadersAsMapping, None]
 
 Extensions = typing.MutableMapping[str, typing.Any]
 

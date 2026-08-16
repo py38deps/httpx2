@@ -666,7 +666,7 @@ class AsyncWebSocketSession(anyio.AsyncContextManagerMixin):
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> typing.AsyncGenerator[AsyncWebSocketSession, None]:
         self._send_event, self._receive_event = anyio.create_memory_object_stream[
-            wsproto.events.Event | HTTPXWSException
+            typing.Union[wsproto.events.Event, HTTPXWSException]
         ]()
         self._background_task_group = anyio.create_task_group()
 

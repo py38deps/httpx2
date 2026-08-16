@@ -15,8 +15,8 @@ from .._transports.asgi import ASGITransport, _ASGIApp
 from .._types import AsyncByteStream
 from ._exceptions import WebSocketDisconnect, WebSocketUpgradeError
 
-Scope = dict[str, typing.Any]
-Message = dict[str, typing.Any]
+Scope = typing.Dict[str, typing.Any]
+Message = typing.Dict[str, typing.Any]
 Receive = typing.Callable[[], typing.Awaitable[Message]]
 Send = typing.Callable[[Scope], typing.Coroutine[None, None, None]]
 ASGIApp = typing.Callable[[Scope, Receive, Send], typing.Coroutine[None, None, None]]
@@ -270,7 +270,7 @@ class ASGIWebSocketTransport(ASGITransport):
         stream, accept_response = await self._task_group.start(self._create_asgi_websocket_async_network_stream)
         accept_response_lines = accept_response.decode("utf-8").splitlines()
         headers = [
-            typing.cast(tuple[str, str], line.split(": ", 1))
+            typing.cast(typing.Tuple[str, str], line.split(": ", 1))
             for line in accept_response_lines[1:]
             if line.strip() != ""
         ]
