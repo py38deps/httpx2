@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import gzip
 import json
+import sys
+import typing
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -12,11 +14,14 @@ from httpx2._decoders import GZipDecoder, LineDecoder
 if TYPE_CHECKING:
     from pytest_codspeed import BenchmarkFixture
 
-pytestmark = pytest.mark.benchmark
+pytestmark = [
+    pytest.mark.benchmark,
+    pytest.mark.skipif(sys.version_info < (3, 9), reason="pytest-codspeed requires Python 3.9+"),
+]
 
 TYPICAL_URL = "https://www.example.org:8443/path/to/resource?key=value&other=1#frag"
 
-HEADERS: list[tuple[str, str]] = [
+HEADERS: typing.List[typing.Tuple[str, str]] = [  # noqa: UP006
     ("host", "example.org"),
     ("user-agent", "httpx2-bench/1.0"),
     ("accept", "*/*"),
@@ -24,11 +29,11 @@ HEADERS: list[tuple[str, str]] = [
     *[(f"x-custom-{i}", f"value-{i}") for i in range(16)],
 ]
 
-SMALL_JSON: dict[str, Any] = {
+SMALL_JSON: typing.Dict[str, Any] = {  # noqa: UP006
     "id": 12345,
     "items": [{"sku": f"SKU-{i}", "qty": i, "price": i * 1.5} for i in range(50)],
 }
-MEDIUM_JSON: dict[str, Any] = {
+MEDIUM_JSON: typing.Dict[str, Any] = {  # noqa: UP006
     "records": [
         {"id": i, "name": f"record-{i}", "tags": [f"t{j}" for j in range(8)], "active": bool(i % 2)} for i in range(256)
     ],
@@ -39,7 +44,7 @@ QUERY_STRING = "key=value&other=1&" + "&".join(f"f{i}={i}" for i in range(16))
 
 GZIP_BODY = gzip.compress(MEDIUM_JSON_BODY)
 
-SET_COOKIE_HEADERS: list[tuple[str, str]] = [
+SET_COOKIE_HEADERS: typing.List[typing.Tuple[str, str]] = [  # noqa: UP006
     ("set-cookie", f"session{i}=value{i}; Path=/; Domain=example.org; HttpOnly") for i in range(8)
 ]
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
 
 import hpack
@@ -11,7 +12,10 @@ import httpcore2
 if TYPE_CHECKING:
     from pytest_codspeed import BenchmarkFixture
 
-pytestmark = pytest.mark.benchmark
+pytestmark = [
+    pytest.mark.benchmark,
+    pytest.mark.skipif(sys.version_info < (3, 9), reason="pytest-codspeed requires Python 3.9+"),
+]
 
 H2_WINDOW = 2**31 - 1
 H2_BODY = b"x" * (8 * 1024 * 1024)

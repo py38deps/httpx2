@@ -9,6 +9,8 @@ We don't do any smarts around cancellations, or managing exceptions from
 children, because we don't need that for our use-case.
 """
 
+from __future__ import annotations
+
 import threading
 from collections.abc import Callable
 from types import TracebackType
@@ -19,7 +21,7 @@ class Nursery:
     def __init__(self) -> None:
         self._threads: list[threading.Thread] = []
 
-    def __enter__(self) -> "Nursery":
+    def __enter__(self) -> Nursery:
         return self
 
     def __exit__(

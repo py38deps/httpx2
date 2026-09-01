@@ -167,7 +167,7 @@ class NetRCAuth(Auth):
 
 
 class DigestAuth(Auth):
-    _ALGORITHM_TO_HASH_FUNCTION: dict[str, typing.Callable[[bytes], _Hash]] = {
+    _ALGORITHM_TO_HASH_FUNCTION: typing.Dict[str, typing.Callable[[bytes], _Hash]] = {  # noqa: UP006
         "MD5": hashlib.md5,
         "MD5-SESS": hashlib.md5,
         "SHA": hashlib.sha1,

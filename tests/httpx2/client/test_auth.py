@@ -4,6 +4,8 @@ Integration tests for authentication.
 Unit tests for auth classes also exist in tests/test_auth.py
 """
 
+from __future__ import annotations
+
 import hashlib
 import netrc
 import os
@@ -413,7 +415,7 @@ async def test_digest_auth(algorithm: str, expected_hash_length: int, expected_r
     assert response.status_code == 200
     assert len(response.history) == 1
 
-    authorization = typing.cast(dict[str, typing.Any], response.json())["auth"]
+    authorization = typing.cast(typing.Dict[str, typing.Any], response.json())["auth"]
     scheme, _, fields = authorization.partition(" ")
     assert scheme == "Digest"
 
@@ -444,7 +446,7 @@ async def test_digest_auth_no_specified_qop() -> None:
     assert response.status_code == 200
     assert len(response.history) == 1
 
-    authorization = typing.cast(dict[str, typing.Any], response.json())["auth"]
+    authorization = typing.cast(typing.Dict[str, typing.Any], response.json())["auth"]
     scheme, _, fields = authorization.partition(" ")
     assert scheme == "Digest"
 

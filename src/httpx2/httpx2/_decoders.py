@@ -33,16 +33,59 @@ except ImportError:  # pragma: no cover
 if typing.TYPE_CHECKING:
     if sys.version_info >= (3, 14):
         from compression.zstd import ZstdDecompressor, ZstdError
-    else:
+    elif sys.version_info >= (3, 10):
         from backports.zstd import ZstdDecompressor, ZstdError
+    else:
+        import zstandard as _zstandard_module
+
+        ZstdDecompressor = _zstandard_module.ZstdDecompressor  # type: ignore[misc]
+        ZstdError = _zstandard_module.ZstdError  # type: ignore[misc]
 
     _zstandard_installed: bool
 else:  # pragma: no cover
     try:
         if sys.version_info >= (3, 14):
             from compression.zstd import ZstdDecompressor, ZstdError
-        else:
+        elif sys.version_info >= (3, 10):
             from backports.zstd import ZstdDecompressor, ZstdError
+        else:
+            # `backports.zstd` requires Python >= 3.10; use the `zstandard`
+            # package instead on older versions. Its `decompressobj` does not
+            # support `max_length`, so adapt it with an internal pending buffer.
+            import zstandard as _zstandard_module
+
+            class ZstdDecompressor:
+                def __init__(self) -> None:
+                    self._decompressor = _zstandard_module.ZstdDecompressor().decompressobj()
+                    self._pending = b""
+
+                @property
+                def eof(self) -> bool:
+                    # Only report end-of-frame once buffered output is drained,
+                    # matching `backports.zstd` semantics.
+                    return self._decompressor.eof and not self._pending
+
+                @property
+                def unused_data(self) -> bytes:
+                    return self._decompressor.unused_data
+
+                @property
+                def needs_input(self) -> bool:
+                    # True when there is no buffered output left to drain.
+                    return not self._pending
+
+                def decompress(self, data: bytes, max_length: int) -> bytes:
+                    if self._pending:
+                        out = self._pending
+                        self._pending = b""
+                    else:
+                        out = self._decompressor.decompress(data)
+                    if len(out) > max_length:
+                        self._pending = out[max_length:]
+                        out = out[:max_length]
+                    return out
+
+            ZstdError = _zstandard_module.ZstdError
 
         _zstandard_installed = True
     except ImportError:
@@ -443,7 +486,7 @@ class LineDecoder:
         return lines
 
 
-SUPPORTED_DECODERS: dict[str, type[ContentDecoder]] = {
+SUPPORTED_DECODERS: typing.Dict[str, typing.Type[ContentDecoder]] = {  # noqa: UP006
     "identity": IdentityDecoder,
     "gzip": GZipDecoder,
     "deflate": DeflateDecoder,

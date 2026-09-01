@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import ipaddress
 import re
+import sys
 import typing
 
 import idna
@@ -350,7 +351,12 @@ def encode_host(host: str) -> str:
         # within square brackets ("[" and "]").  This is the only place where
         # square bracket characters are allowed in the URI syntax."
         try:
-            ipaddress.IPv6Address(host[1:-1])
+            if sys.version_info < (3, 9):  # pragma: no cover
+                # `ipaddress.IPv6Address` does not support zone identifiers
+                # (`%eth0`) before Python 3.9; strip the zone before validating.
+                ipaddress.IPv6Address(host[1:-1].split("%", 1)[0])
+            else:
+                ipaddress.IPv6Address(host[1:-1])
         except ipaddress.AddressValueError:
             raise InvalidURL(f"Invalid IPv6 address: {host!r}")
         return host[1:-1]

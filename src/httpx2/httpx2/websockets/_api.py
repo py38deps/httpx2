@@ -16,6 +16,22 @@ if sys.version_info >= (3, 13):
 else:
     from typing_extensions import TypeVar  # pragma: no cover
 
+if sys.version_info >= (3, 10):
+    _async_nullcontext = contextlib.nullcontext
+else:  # pragma: no cover
+    # `contextlib.nullcontext` gained async support in Python 3.10.
+    class _AsyncNullContext(contextlib.AbstractAsyncContextManager):
+        def __init__(self, enter_result):
+            self._enter_result = enter_result
+
+        async def __aenter__(self):
+            return self._enter_result
+
+        async def __aexit__(self, *exc_info):
+            return None
+
+    _async_nullcontext = _AsyncNullContext
+
 import anyio
 import wsproto
 import wsproto.utilities
@@ -1633,7 +1649,7 @@ async def aconnect_ws(
 
         owned_client: contextlib.AbstractAsyncContextManager[AsyncClient] = AsyncClient()
     else:
-        owned_client = contextlib.nullcontext(client)
+        owned_client = _async_nullcontext(client)
 
     async with owned_client as client:
         ws_client = AsyncWebSocketClient(

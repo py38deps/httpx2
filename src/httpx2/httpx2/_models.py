@@ -6,10 +6,26 @@ import datetime
 import email.message
 import json as jsonlib
 import re
+import sys
 import typing
 import urllib.request
 from collections.abc import AsyncGenerator, Mapping
 from http.cookiejar import Cookie, CookieJar
+
+if sys.version_info >= (3, 10):
+    aclosing = contextlib.aclosing
+else:  # pragma: no cover
+    # `contextlib.aclosing` was added in Python 3.10.
+    class aclosing(contextlib.AbstractAsyncContextManager):  # type: ignore[no-redef]
+        def __init__(self, thing):
+            self.thing = thing
+
+        async def __aenter__(self):
+            return self.thing
+
+        async def __aexit__(self, *exc_info):
+            await self.thing.aclose()
+
 
 from ._content import ByteStream, UnattachedStream, encode_request, encode_response
 from ._decoders import (
@@ -972,7 +988,7 @@ class Response:
         Read and return the response content.
         """
         if not hasattr(self, "_content"):
-            async with contextlib.aclosing(self.aiter_bytes()) as parts:
+            async with aclosing(self.aiter_bytes()) as parts:
                 self._content = b"".join([part async for part in parts])
         return self._content
 
@@ -989,7 +1005,7 @@ class Response:
             decoder = self._get_content_decoder()
             chunker = ByteChunker(chunk_size=chunk_size)
             with request_context(request=self._request):
-                async with contextlib.aclosing(self.aiter_raw()) as raw_stream:
+                async with aclosing(self.aiter_raw()) as raw_stream:
                     async for raw_bytes in raw_stream:
                         for decoded in decoder.decode(raw_bytes):
                             for chunk in chunker.decode(decoded):

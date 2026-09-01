@@ -29,6 +29,7 @@ SOFTWARE.
 from __future__ import annotations
 
 import json as jsonlib
+import typing
 from collections.abc import AsyncIterator, Iterator
 from dataclasses import dataclass
 
@@ -50,7 +51,7 @@ class ServerSentEvent:
     event: str = "message"
     data: str = ""
     id: str = ""
-    retry: int | None = None
+    retry: typing.Optional[int] = None  # noqa: UP006, UP045
 
     def json(self) -> object:
         return jsonlib.loads(self.data)

@@ -1014,7 +1014,7 @@ def test_response_decode_text_using_autodetect() -> None:
 
     assert response.status_code == 200
     assert response.reason_phrase == "OK"
-    assert response.encoding == "WINDOWS-1252"
+    assert response.encoding is not None and response.encoding.lower() == "windows-1252"
     assert response.text == text
 
 

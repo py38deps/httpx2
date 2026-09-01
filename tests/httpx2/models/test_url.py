@@ -81,7 +81,7 @@ def test_origin_is_immutable_and_hashable() -> None:
     origin = httpx2.Origin("https://example.com")
 
     with pytest.raises(AttributeError):
-        origin.host = "other.example.com"  # type: ignore[misc]
+        origin.host = "other.example.com"
 
     assert {origin, httpx2.Origin("HTTPS://EXAMPLE.COM:443")} == {origin}
 

@@ -194,7 +194,20 @@ class URL:
         host: str = self._uri_reference.host
 
         if "xn--" in host:
-            host = idna.decode(host, display=True)
+            try:
+                host = idna.decode(host, display=True)
+            except TypeError:  # pragma: no cover
+                # `display` was added in idna 3.18; on older versions (Python
+                # 3.8) decode each label individually, keeping malformed
+                # labels in their ASCII form.
+                labels = host.split(".")
+                for idx, label in enumerate(labels):
+                    if label.startswith("xn--"):
+                        try:
+                            labels[idx] = idna.decode(label)
+                        except idna.IDNAError:
+                            pass
+                host = ".".join(labels)
 
         return host
 
@@ -439,7 +452,14 @@ _ORIGIN_DEFAULT_PORTS = {
 }
 
 
-@dataclass(frozen=True, slots=True, init=False)
+if sys.version_info >= (3, 10):
+    _ORIGIN_DATACLASS_KWARGS = {"frozen": True, "slots": True, "init": False}
+else:  # pragma: no cover
+    # `slots=True` was added to `@dataclass` in Python 3.10.
+    _ORIGIN_DATACLASS_KWARGS = {"frozen": True, "init": False}
+
+
+@dataclass(**_ORIGIN_DATACLASS_KWARGS)
 class Origin:
     """
     The scheme, host, and effective port of a URL.
@@ -464,7 +484,17 @@ class Origin:
         if b":" in url.raw_host:
             # IPv6 addresses may have multiple equivalent string forms. Store
             # their canonical compressed form so origin equality is numeric.
-            host = str(ipaddress.IPv6Address(url.raw_host.decode("ascii")))
+            raw_host = url.raw_host.decode("ascii")
+            if sys.version_info < (3, 9):  # pragma: no cover
+                # `ipaddress.IPv6Address` does not support zone identifiers
+                # (`%eth0`) before Python 3.9; normalize the address without
+                # the zone and re-attach it.
+                address, separator, zone = raw_host.partition("%")
+                host = str(ipaddress.IPv6Address(address))
+                if separator:
+                    host += separator + zone
+            else:
+                host = str(ipaddress.IPv6Address(raw_host))
 
         port = url.port
         if port is None:

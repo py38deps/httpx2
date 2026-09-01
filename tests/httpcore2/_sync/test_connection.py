@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ssl
 import typing
 
@@ -241,7 +243,7 @@ class NeedsRetryBackend(MockBackend):
         return self._NeedsRetryAsyncNetworkStream(self, stream)
 
     class _NeedsRetryAsyncNetworkStream(NetworkStream):
-        def __init__(self, backend: "NeedsRetryBackend", stream: NetworkStream) -> None:
+        def __init__(self, backend: NeedsRetryBackend, stream: NetworkStream) -> None:
             self._backend = backend
             self._stream = stream
 
@@ -259,7 +261,7 @@ class NeedsRetryBackend(MockBackend):
             ssl_context: ssl.SSLContext,
             server_hostname: str | None = None,
             timeout: float | None = None,
-        ) -> "NetworkStream":
+        ) -> NetworkStream:
             if self._backend._start_tls_failures > 0:
                 self._backend._start_tls_failures -= 1
                 raise ConnectError()

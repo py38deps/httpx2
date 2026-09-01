@@ -14,8 +14,10 @@ import httpx2
 
 if sys.version_info >= (3, 14):  # pragma: no cover
     from compression import zstd
-else:  # pragma: no cover
+elif sys.version_info >= (3, 10):  # pragma: no cover
     from backports import zstd
+else:  # pragma: no cover
+    import zstandard as zstd
 
 
 def test_deflate() -> None:

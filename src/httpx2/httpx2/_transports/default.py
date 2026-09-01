@@ -69,7 +69,7 @@ SOCKET_OPTION = typing.Union[
 
 __all__ = ["AsyncHTTPTransport", "HTTPTransport"]
 
-HTTPCORE_EXC_MAP: dict[type[Exception], type[httpx2.HTTPError]] = {}
+HTTPCORE_EXC_MAP: typing.Dict[typing.Type[Exception], typing.Type[httpx2.HTTPError]] = {}  # noqa: UP006
 
 
 def _load_httpcore_exceptions() -> dict[type[Exception], type[httpx2.HTTPError]]:
