@@ -1,0 +1,54 @@
+#!/bin/sh -e
+
+set -x
+
+# Python 3.8/3.9 cannot use `uv sync --frozen` (uv.lock is locked for >= 3.10),
+# and several runtime dependencies have no PyPI release supporting these
+# interpreters. Install the py38deps backport repos (same versions, widened
+# `requires-python`) from git, then the project and the test dependencies
+# explicitly. Linting and packaging are skipped for 3.8/3.9 in CI.
+
+uv venv
+
+# Runtime dependencies without a 3.8/3.9-compatible PyPI release. Each py38deps
+# repo keeps its own default branch; refs are pinned to `refs/heads/<branch>`
+# because `@<name>` is interpreted as a tag by uv.
+uv pip install \
+    "anyio @ git+https://github.com/py38deps/anyio.git@refs/heads/master" \
+    "truststore @ git+https://github.com/py38deps/truststore.git@refs/heads/main" \
+    "idna @ git+https://github.com/py38deps/idna.git@refs/heads/master" \
+    "trio @ git+https://github.com/py38deps/trio.git@refs/heads/main" \
+    "wsproto @ git+https://github.com/py38deps/wsproto.git@refs/heads/main" \
+    "h2 @ git+https://github.com/py38deps/h2.git@refs/heads/master" \
+    "hyperframe @ git+https://github.com/py38deps/hyperframe.git@refs/heads/master" \
+    "hpack @ git+https://github.com/py38deps/hpack.git@refs/heads/master"
+
+uv pip install -e "src/httpcore2[asyncio,trio,http2,socks]" -e "src/httpx2[brotli,http2,socks,ws,zstd]"
+
+# Test dependencies (versions compatible with 3.8/3.9).
+# `brotlicffi` is pulled in by httpbin; pin 1.1.0.0 which ships wheels for 3.8.
+uv pip install "brotlicffi==1.1.0.0"
+uv pip install \
+    "pytest>=8.3.5,<9" \
+    "pytest-cov>=5,<6" \
+    "pytest-xdist>=3.6.1,<4" \
+    "pytest-trio==0.8.0" \
+    "pytest-httpbin==2.1.0" \
+    "flaky>=3.8" \
+    "trustme==1.1.0" \
+    "chardet==5.2.0" \
+    "cryptography>=44,<45" \
+    "starlette>=0.40,<0.41" \
+    "uvicorn>=0.33,<0.34" \
+    "websockets>=13.1,<16" \
+    "werkzeug>=3.0,<3.1" \
+    "coverage[toml]==7.6.1"
+
+# The httpx2 CLI extra (`click>=8.4.2`) requires Python >= 3.10; install the
+# last 3.8-compatible click and its dependencies for the CLI tests.
+uv pip install "click==8.1.8" "rich>=10,<16"
+
+# pytest-codspeed requires Python >= 3.9; benchmarks are skipped on 3.8.
+if [ "$(uv run python -c 'import sys; print(sys.version_info[1])')" != "8" ]; then
+    uv pip install "pytest-codspeed==3.2.0"
+fi

@@ -4,4 +4,3 @@ set -x
 
 uv build --all-packages
 uv run twine check dist/*
-uv run zensical build -c -f mkdocs.yml
