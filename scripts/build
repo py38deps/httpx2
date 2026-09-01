@@ -3,4 +3,4 @@
 set -x
 
 uv build --all-packages
-uv run twine check dist/*
+uv run --frozen twine check dist/*

@@ -48,10 +48,20 @@ jobs:
         run: scripts/build
 
       - name: Run tests
+        if: matrix.python-version != '3.8' && matrix.python-version != '3.9'
         run: scripts/test
 
+      - name: Run tests (Python 3.8/3.9)
+        if: matrix.python-version == '3.8' || matrix.python-version == '3.9'
+        run: .venv/bin/python -m pytest
+
       - name: Enforce coverage
+        if: matrix.python-version != '3.8' && matrix.python-version != '3.9'
         run: scripts/coverage
+
+      - name: Enforce coverage (Python 3.8/3.9)
+        if: matrix.python-version == '3.8' || matrix.python-version == '3.9'
+        run: .venv/bin/python -m coverage report --show-missing --skip-covered --fail-under=100
 
       - name: Upload dist
         if: matrix.python-version == '3.15'

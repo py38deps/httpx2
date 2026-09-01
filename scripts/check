@@ -4,9 +4,9 @@ export SOURCE_FILES="src/httpx2 tests/httpx2 src/httpcore2 tests/httpcore2"
 
 set -x
 
-# uv.lock is kept at the upstream requires-python (>=3.10) until the
-# truststore backport for Python 3.8 is available; re-run `uv lock` afterwards.
-uv run ruff format --check --diff
-uv run mypy $SOURCE_FILES
-uv run ruff check
-uv run python scripts/unasync.py --check
+# uv.lock is locked for Python >= 3.10 (upstream); `--frozen` keeps `uv run`
+# from re-resolving for the backported 3.8/3.9 workspace range.
+uv run --frozen ruff format --check --diff
+uv run --frozen mypy $SOURCE_FILES
+uv run --frozen ruff check
+uv run --frozen python scripts/unasync.py --check

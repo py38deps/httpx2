@@ -49,6 +49,6 @@ uv pip install \
 uv pip install "click==8.1.8" "rich>=10,<16"
 
 # pytest-codspeed requires Python >= 3.9; benchmarks are skipped on 3.8.
-if [ "$(uv run python -c 'import sys; print(sys.version_info[1])')" != "8" ]; then
+if [ "$(.venv/bin/python -c 'import sys; print(sys.version_info[1])')" != "8" ]; then
     uv pip install "pytest-codspeed==3.2.0"
 fi
