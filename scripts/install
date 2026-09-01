@@ -3,3 +3,7 @@
 set -x
 
 uv sync --frozen
+# The zstd extra in uv.lock still resolves to `backports.zstd` (upstream), but
+# the backport decodes zstd with the `zstandard` package on all Python
+# versions < 3.14.
+uv pip install "zstandard>=0.23.0"

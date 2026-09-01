@@ -53,7 +53,7 @@ jobs:
 
       - name: Run tests (Python 3.8/3.9)
         if: matrix.python-version == '3.8' || matrix.python-version == '3.9'
-        run: .venv/bin/python -m pytest
+        run: .venv/bin/python -m coverage run -m pytest
 
       - name: Enforce coverage
         if: matrix.python-version != '3.8' && matrix.python-version != '3.9'

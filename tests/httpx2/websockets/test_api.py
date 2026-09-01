@@ -5,6 +5,7 @@ import queue
 import threading
 import time
 import typing
+from contextlib import contextmanager
 from unittest.mock import MagicMock, call, patch
 
 import anyio
@@ -32,6 +33,20 @@ from httpx2.websockets._exceptions import (
     WebSocketUpgradeError,
 )
 from tests.httpx2.websockets.conftest import ServerFactoryFixture
+
+if hasattr(pytest, "RaisesGroup"):
+    raises_group = pytest.RaisesGroup
+else:  # pragma: no cover
+    # pytest < 8.4 (Python 3.8): assert an exception group whose children are
+    # all instances of the expected type.
+    from exceptiongroup import ExceptionGroup
+
+    @contextmanager
+    def raises_group(exc_type: type[BaseException]) -> typing.Iterator[None]:
+        with pytest.raises(ExceptionGroup) as excinfo:
+            yield
+        assert excinfo.value.exceptions
+        assert all(isinstance(exc, exc_type) for exc in excinfo.value.exceptions)
 
 
 @pytest.mark.anyio
@@ -92,7 +107,7 @@ class TestSend:
                 self._should_close = True
 
         stream = AsyncMockNetworkStream()
-        with pytest.RaisesGroup(WebSocketNetworkError):
+        with raises_group(WebSocketNetworkError):
             async with AsyncWebSocketSession(stream) as websocket_session:
                 await websocket_session.send(wsproto.events.Ping())
 
@@ -270,7 +285,7 @@ class TestReceive:
                 pass
 
         stream = AsyncMockNetworkStream()
-        with pytest.RaisesGroup(WebSocketNetworkError):
+        with raises_group(WebSocketNetworkError):
             async with AsyncWebSocketSession(stream) as websocket_session:
                 await websocket_session.receive()
 
@@ -289,7 +304,7 @@ class TestReceive:
                 pass
 
         stream = AsyncMockNetworkStream()
-        with pytest.RaisesGroup(WebSocketNetworkError):
+        with raises_group(WebSocketNetworkError):
             async with AsyncWebSocketSession(stream) as websocket_session:
                 await websocket_session.receive()
 
@@ -787,7 +802,7 @@ class TestKeepalivePing:
                 self._should_close = True
 
         stream = MockAsyncNetworkStream()
-        with pytest.RaisesGroup(WebSocketNetworkError):
+        with raises_group(WebSocketNetworkError):
             async with AsyncWebSocketSession(
                 stream,
                 keepalive_ping_interval_seconds=0.1,
