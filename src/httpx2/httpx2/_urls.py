@@ -452,7 +452,7 @@ _ORIGIN_DEFAULT_PORTS = {
 }
 
 
-if sys.version_info >= (3, 10):
+if sys.version_info >= (3, 10):  # pragma: no cover
     _ORIGIN_DATACLASS_KWARGS = {"frozen": True, "slots": True, "init": False}
 else:  # pragma: no cover
     # `slots=True` was added to `@dataclass` in Python 3.10.
@@ -493,7 +493,7 @@ class Origin:
                 host = str(ipaddress.IPv6Address(address))
                 if separator:
                     host += separator + zone
-            else:
+            else:  # pragma: no cover
                 host = str(ipaddress.IPv6Address(raw_host))
 
         port = url.port

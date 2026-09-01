@@ -34,7 +34,8 @@ from httpx2.websockets._exceptions import (
 )
 from tests.httpx2.websockets.conftest import ServerFactoryFixture
 
-if hasattr(pytest, "RaisesGroup"):
+raises_group: typing.Callable[..., typing.Any]
+if hasattr(pytest, "RaisesGroup"):  # pragma: no cover
     raises_group = pytest.RaisesGroup
 else:  # pragma: no cover
     # pytest < 8.4 (Python 3.8): assert an exception group whose children are
@@ -42,11 +43,13 @@ else:  # pragma: no cover
     from exceptiongroup import ExceptionGroup
 
     @contextmanager
-    def raises_group(exc_type: type[BaseException]) -> typing.Iterator[None]:
+    def raises_group_impl(exc_type: type[BaseException]) -> typing.Iterator[None]:
         with pytest.raises(ExceptionGroup) as excinfo:
             yield
         assert excinfo.value.exceptions
         assert all(isinstance(exc, exc_type) for exc in excinfo.value.exceptions)
+
+    raises_group = raises_group_impl
 
 
 @pytest.mark.anyio

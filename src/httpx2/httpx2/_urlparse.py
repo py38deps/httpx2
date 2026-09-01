@@ -355,7 +355,7 @@ def encode_host(host: str) -> str:
                 # `ipaddress.IPv6Address` does not support zone identifiers
                 # (`%eth0`) before Python 3.9; strip the zone before validating.
                 ipaddress.IPv6Address(host[1:-1].split("%", 1)[0])
-            else:
+            else:  # pragma: no cover
                 ipaddress.IPv6Address(host[1:-1])
         except ipaddress.AddressValueError:
             raise InvalidURL(f"Invalid IPv6 address: {host!r}")

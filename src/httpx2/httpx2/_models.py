@@ -12,7 +12,7 @@ import urllib.request
 from collections.abc import AsyncGenerator, Mapping
 from http.cookiejar import Cookie, CookieJar
 
-if sys.version_info >= (3, 10):
+if sys.version_info >= (3, 10):  # pragma: no cover
     aclosing = contextlib.aclosing
 else:  # pragma: no cover
     # `contextlib.aclosing` was added in Python 3.10.

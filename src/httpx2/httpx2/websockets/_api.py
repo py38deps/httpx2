@@ -16,7 +16,7 @@ if sys.version_info >= (3, 13):
 else:
     from typing_extensions import TypeVar  # pragma: no cover
 
-if sys.version_info >= (3, 10):
+if sys.version_info >= (3, 10):  # pragma: no cover
     _async_nullcontext = contextlib.nullcontext
 else:  # pragma: no cover
     # `contextlib.nullcontext` gained async support in Python 3.10.
