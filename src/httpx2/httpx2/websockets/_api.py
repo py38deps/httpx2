@@ -530,7 +530,7 @@ class WebSocketSession:
                         data = self.connection.send(event.response())
                         with self._write_lock:
                             self.stream.write(data)
-                        continue
+                        continue  # pragma: no cover
                     if isinstance(event, wsproto.events.Pong):
                         self._ping_manager.ack(event.payload)
                         continue
@@ -1099,7 +1099,7 @@ class AsyncWebSocketSession(anyio.AsyncContextManagerMixin):
                         data = self.connection.send(event.response())
                         async with self._write_lock:
                             await self.stream.write(data)
-                        continue
+                        continue  # pragma: no cover
                     if isinstance(event, wsproto.events.Pong):
                         self._ping_manager.ack(event.payload)
                         continue
