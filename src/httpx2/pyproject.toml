@@ -40,11 +40,9 @@ dynamic = ["readme"]
 dependencies = [
     "truststore>=0.10; sys_platform != 'emscripten'",
     "httpcore2==2.12.0; sys_platform != 'emscripten'",
-    "anyio>=4.10; sys_platform != 'emscripten' and python_version >= '3.9'",
-    "anyio>=4.6.2,<5; sys_platform != 'emscripten' and python_version < '3.9'",
+    "anyio>=4.10; sys_platform != 'emscripten'",
     "httpx2-jsfetch; sys_platform == 'emscripten' and python_version >= '3.12'",
-    "idna>=3.18; python_version >= '3.9'",
-    "idna>=3.15,<3.16; python_version < '3.9'",
+    "idna>=3.18",
     "typing_extensions>=4.5.0; python_version < '3.13'",
 ]
 
@@ -69,8 +67,7 @@ ws = [
 ]
 # TODO(Marcelo): Remove when Python 3.13 reaches EOL.
 zstd = [
-    "backports.zstd>=1.0.0; python_version >= '3.10' and python_version <= '3.13'",
-    "zstandard>=0.23.0; python_version < '3.10'",
+    "zstandard>=0.23.0; python_version <= '3.13'",
 ]
 
 [project.scripts]

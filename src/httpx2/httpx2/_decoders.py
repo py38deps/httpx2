@@ -33,8 +33,6 @@ except ImportError:  # pragma: no cover
 if typing.TYPE_CHECKING:
     if sys.version_info >= (3, 14):
         from compression.zstd import ZstdDecompressor, ZstdError
-    elif sys.version_info >= (3, 10):
-        from backports.zstd import ZstdDecompressor, ZstdError
     else:
         import zstandard as _zstandard_module
 
@@ -46,12 +44,11 @@ else:  # pragma: no cover
     try:
         if sys.version_info >= (3, 14):
             from compression.zstd import ZstdDecompressor, ZstdError
-        elif sys.version_info >= (3, 10):
-            from backports.zstd import ZstdDecompressor, ZstdError
         else:
-            # `backports.zstd` requires Python >= 3.10; use the `zstandard`
-            # package instead on older versions. Its `decompressobj` does not
-            # support `max_length`, so adapt it with an internal pending buffer.
+            # Upstream uses `backports.zstd` here, which requires Python >= 3.10;
+            # use the `zstandard` package instead (the upstream dependency before
+            # v2.12.0). Its `decompressobj` does not support `max_length`, so
+            # adapt it with an internal pending buffer.
             import zstandard as _zstandard_module
 
             class ZstdDecompressor:
