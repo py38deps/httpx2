@@ -280,7 +280,7 @@ class ZStandardDecoder(ContentDecoder):
                 while decompressed:
                     yield decompressed
                     if self.decompressor.needs_input or self.decompressor.eof:
-                        break
+                        break  # pragma: no cover
                     decompressed = self.decompressor.decompress(b"", MAX_DECODE_CHUNK_SIZE)
                 if not (self.decompressor.eof and self.decompressor.unused_data):
                     break
