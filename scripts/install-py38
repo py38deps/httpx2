@@ -37,18 +37,21 @@ uv pip install \
     "flaky>=3.8" \
     "trustme==1.1.0" \
     "chardet==5.2.0" \
-    "cryptography>=44,<45" \
-    "starlette>=0.40,<0.41" \
-    "uvicorn>=0.33,<0.34" \
     "websockets>=13.1,<16" \
-    "werkzeug>=3.0,<3.1" \
     "coverage[toml]==7.6.1"
 
 # The httpx2 CLI extra (`click>=8.4.2`) requires Python >= 3.10; install the
 # last 3.8-compatible click and its dependencies for the CLI tests.
 uv pip install "click==8.1.8" "rich>=10,<16"
 
-# pytest-codspeed requires Python >= 3.9; benchmarks are skipped on 3.8.
-if [ "$(.venv/bin/python -c 'import sys; print(sys.version_info[1])')" != "8" ]; then
+if [ "$(.venv/bin/python -c 'import sys; print(sys.version_info[1])')" = "8" ]; then
+    # Python 3.8: uvicorn 0.33 is the last release supporting it (it lacks the
+    # `websockets-sansio` implementation, added in 0.35); starlette and
+    # cryptography are pinned to their last 3.8-compatible lines.
+    uv pip install "starlette>=0.40,<0.41" "uvicorn>=0.33,<0.34" "cryptography>=44,<45"
+else
+    # Python 3.9: upstream-compatible versions. pytest-codspeed (>= 3.9) is
+    # needed here because the benchmark tests are only skipped on 3.8.
+    uv pip install "starlette>=0.49,<1.0" "uvicorn>=0.35,<0.53" "cryptography>=49,<50"
     uv pip install "pytest-codspeed==3.2.0"
 fi

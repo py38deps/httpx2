@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import pathlib
 import queue
+import sys
 import tempfile
 import time
 import typing
@@ -17,13 +18,17 @@ from starlette.websockets import WebSocket
 
 WebSocketEndpoint = typing.Callable[[WebSocket], typing.Awaitable[None]]
 
+# uvicorn only supports the `websockets-sansio` implementation from 0.35
+# (requires Python >= 3.9); on 3.8 the wsproto implementation is used only.
+_WS_IMPLEMENTATIONS = ("wsproto", "websockets-sansio") if sys.version_info >= (3, 9) else ("wsproto",)
+
 
 @pytest.fixture
 def on_receive_message() -> MagicMock:
     return MagicMock()
 
 
-@pytest.fixture(params=("wsproto", "websockets-sansio"))
+@pytest.fixture(params=_WS_IMPLEMENTATIONS)
 def websocket_implementation(request: pytest.FixtureRequest) -> typing.Literal["wsproto", "websockets-sansio"]:
     return request.param  # type: ignore[no-any-return]
 

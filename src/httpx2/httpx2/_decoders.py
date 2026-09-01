@@ -36,8 +36,8 @@ if typing.TYPE_CHECKING:
     else:
         import zstandard as _zstandard_module
 
-        ZstdDecompressor = _zstandard_module.ZstdDecompressor  # type: ignore[misc]
-        ZstdError = _zstandard_module.ZstdError  # type: ignore[misc]
+        ZstdDecompressor = _zstandard_module.ZstdDecompressor
+        ZstdError = _zstandard_module.ZstdError
 
     _zstandard_installed: bool
 else:  # pragma: no cover

@@ -42,7 +42,7 @@ class _AliasFinder(importlib.abc.MetaPathFinder):
         # Equivalent to `fullname.removeprefix(self._alias)` (Python 3.9+).
         if fullname.startswith(self._alias):
             real_name = self._real + fullname[len(self._alias) :]
-        else:
+        else:  # pragma: no cover
             real_name = self._real
         if real_name not in sys.modules and importlib.util.find_spec(real_name) is None:
             return None
