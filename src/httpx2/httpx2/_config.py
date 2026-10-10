@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import os
+import sys
 import typing
 
 from ._models import Headers
@@ -154,7 +155,15 @@ class Timeout:
         return f"{class_name}(connect={self.connect}, read={self.read}, write={self.write}, pool={self.pool})"
 
 
-@dataclasses.dataclass(kw_only=True)
+if sys.version_info >= (3, 10):  # pragma: no cover
+    _LIMITS_DATACLASS_KWARGS = {"kw_only": True}
+else:  # pragma: no cover
+    # `kw_only` was added to `@dataclass` in Python 3.10; the explicit
+    # keyword-only `__init__` below is used on older versions instead.
+    _LIMITS_DATACLASS_KWARGS = {"init": False}
+
+
+@dataclasses.dataclass(**_LIMITS_DATACLASS_KWARGS)
 class Limits:
     """
     Configuration for limits to various client behaviors.
@@ -172,6 +181,19 @@ class Limits:
     max_connections: int | None = None
     max_keepalive_connections: int | None = None
     keepalive_expiry: float | None = 5.0
+
+    if sys.version_info < (3, 10):  # pragma: no cover
+
+        def __init__(
+            self,
+            *,
+            max_connections: int | None = None,
+            max_keepalive_connections: int | None = None,
+            keepalive_expiry: float | None = 5.0,
+        ) -> None:
+            self.max_connections = max_connections
+            self.max_keepalive_connections = max_keepalive_connections
+            self.keepalive_expiry = keepalive_expiry
 
 
 class Proxy:

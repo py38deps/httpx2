@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import select
 import socket
 import sys
@@ -11,8 +12,37 @@ from collections.abc import (
     Iterable,
     Iterator,
 )
-from contextlib import AbstractAsyncContextManager, aclosing, contextmanager, nullcontext
+from contextlib import AbstractAsyncContextManager, contextmanager
 from types import AsyncGeneratorType
+
+if sys.version_info >= (3, 10):  # pragma: no cover
+    aclosing = contextlib.aclosing
+    _async_nullcontext = contextlib.nullcontext
+else:  # pragma: no cover
+    # `contextlib.aclosing` and async support for `contextlib.nullcontext`
+    # were both added in Python 3.10.
+    class aclosing(contextlib.AbstractAsyncContextManager):  # type: ignore[no-redef]
+        def __init__(self, thing):
+            self.thing = thing
+
+        async def __aenter__(self):
+            return self.thing
+
+        async def __aexit__(self, *exc_info):
+            await self.thing.aclose()
+
+    class _AsyncNullContext(contextlib.AbstractAsyncContextManager):
+        def __init__(self, enter_result):
+            self._enter_result = enter_result
+
+        async def __aenter__(self):
+            return self._enter_result
+
+        async def __aexit__(self, *exc_info):
+            return None
+
+    _async_nullcontext = _AsyncNullContext
+
 
 T = typing.TypeVar("T")
 
@@ -55,7 +85,7 @@ def safe_async_iterate(
     )
     if isinstance(iterator, AsyncGeneratorType):
         return aclosing(iterator)
-    return nullcontext(iterator)
+    return _async_nullcontext(iterator)
 
 
 @contextmanager
