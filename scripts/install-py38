@@ -4,24 +4,35 @@ set -x
 
 # Python 3.8/3.9 cannot use `uv sync --frozen` (uv.lock is locked for >= 3.10),
 # and several runtime dependencies have no PyPI release supporting these
-# interpreters. Install the py38deps backport repos (same versions, widened
-# `requires-python`) from git, then the project and the test dependencies
-# explicitly. Linting and packaging are skipped for 3.8/3.9 in CI.
+# interpreters. Install the py38deps backport wheels (same versions, widened
+# `requires-python`) from the py38deps package index, then the project and the
+# test dependencies explicitly. Linting and packaging are skipped for 3.8/3.9
+# in CI.
+
+# The index only adds the wheels that PyPI cannot provide for 3.8/3.9. uv must
+# merge both indexes the way pip does (`unsafe-best-match`); the default
+# `first-index` strategy stops at the first index that has the project and never
+# sees the backport wheels.
+export UV_EXTRA_INDEX_URL="https://py38deps.github.io/py38deps/simple/"
+export UV_INDEX_STRATEGY="unsafe-best-match"
 
 uv venv
 
-# Runtime dependencies without a 3.8/3.9-compatible PyPI release. Each py38deps
-# repo keeps its own default branch; refs are pinned to `refs/heads/<branch>`
-# because `@<name>` is interpreted as a tag by uv.
-uv pip install \
-    "anyio @ git+https://github.com/py38deps/anyio.git@refs/heads/master" \
-    "truststore @ git+https://github.com/py38deps/truststore.git@refs/heads/main" \
-    "idna @ git+https://github.com/py38deps/idna.git@refs/heads/master" \
-    "trio @ git+https://github.com/py38deps/trio.git@refs/heads/main" \
-    "wsproto @ git+https://github.com/py38deps/wsproto.git@refs/heads/main" \
-    "h2 @ git+https://github.com/py38deps/h2.git@refs/heads/master" \
-    "hyperframe @ git+https://github.com/py38deps/hyperframe.git@refs/heads/master" \
-    "hpack @ git+https://github.com/py38deps/hpack.git@refs/heads/master"
+# Runtime dependencies without a 3.8/3.9-compatible PyPI release. The specifiers
+# mirror the ones in the two pyproject files.
+#
+# `--no-config`: the py38deps index is a static page without upload dates, and
+# `exclude-newer` (7 days, from pyproject.toml) drops every candidate that has no
+# upload date. The remaining steps resolve against PyPI, where it still applies.
+uv pip install --no-config \
+    "anyio>=4.10" \
+    "truststore>=0.10" \
+    "idna>=3.18" \
+    "trio>=0.34.0,<1.0" \
+    "wsproto>=1.2" \
+    "h2>=3,<5" \
+    "hyperframe" \
+    "hpack"
 
 uv pip install -e "src/httpcore2[asyncio,trio,http2,socks]" -e "src/httpx2[brotli,http2,socks,ws,zstd]"
 
