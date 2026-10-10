@@ -7,7 +7,7 @@ name = "httpx2"
 description = "The next generation HTTP client."
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
-version = "2.12.0"
+version = "2.13.1"
 authors = [
     { name = "Tom Christie", email = "tom@tomchristie.com" },
 ]
@@ -39,7 +39,7 @@ dynamic = ["readme"]
 
 dependencies = [
     "truststore>=0.10; sys_platform != 'emscripten'",
-    "httpcore2==2.12.0; sys_platform != 'emscripten'",
+    "httpcore2==2.13.1; sys_platform != 'emscripten'",
     "anyio>=4.10; sys_platform != 'emscripten'",
     "httpx2-jsfetch; sys_platform == 'emscripten' and python_version >= '3.12'",
     "idna>=3.18",
@@ -49,7 +49,7 @@ dependencies = [
 [project.optional-dependencies]
 brotli = [
     "brotli>=1.2.0; platform_python_implementation == 'CPython'",
-    "brotlicffi>=1.2.0.0; platform_python_implementation != 'CPython'",
+    "brotlicffi>=1.2.0.2; platform_python_implementation != 'CPython'",
 ]
 cli = [
     "click>=8.4.2",
