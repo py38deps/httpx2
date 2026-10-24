@@ -28,6 +28,7 @@ else:  # pragma: no cover
 
 
 from ._content import ByteStream, UnattachedStream, encode_request, encode_response
+from ._cookies import IndexedCookieJar
 from ._decoders import (
     ByteChunker,
     ContentDecoder,
@@ -432,7 +433,7 @@ class Request:
         self.extensions = {} if extensions is None else dict(extensions)
 
         if cookies:
-            Cookies(cookies).set_cookie_header(self)
+            (cookies if isinstance(cookies, Cookies) else Cookies(cookies)).set_cookie_header(self)
 
         if stream is None:
             content_type: str | None = self.headers.get("content-type")
@@ -1095,16 +1096,16 @@ class Cookies(typing.MutableMapping[str, str]):
 
     def __init__(self, cookies: CookieTypes | None = None) -> None:
         if cookies is None or isinstance(cookies, dict):
-            self.jar = CookieJar()
+            self.jar: CookieJar = IndexedCookieJar()
             if isinstance(cookies, dict):
                 for key, value in cookies.items():
                     self.set(key, value)
         elif isinstance(cookies, list):
-            self.jar = CookieJar()
+            self.jar = IndexedCookieJar()
             for key, value in cookies:
                 self.set(key, value)
         elif isinstance(cookies, Cookies):
-            self.jar = CookieJar()
+            self.jar = IndexedCookieJar()
             for cookie in cookies.jar:
                 self.jar.set_cookie(cookie)
         else:

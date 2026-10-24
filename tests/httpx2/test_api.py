@@ -103,6 +103,8 @@ def test_httpcore_lazy_loading(server: TestServer) -> None:
     import sys
 
     # unload our module if it is already loaded
+    loaded_httpx2 = sys.modules.get("httpx2")
+    loaded_httpcore2 = sys.modules.get("httpcore2")
     if "httpx2" in sys.modules:
         del sys.modules["httpx2"]
         del sys.modules["httpcore2"]
@@ -111,3 +113,11 @@ def test_httpcore_lazy_loading(server: TestServer) -> None:
     assert "httpcore2" not in sys.modules
     _response = httpx2.get(server.url)
     assert "httpcore2" in sys.modules
+
+    # Restore the modules the rest of the suite imported. Re-importing binds a
+    # new `httpcore2` module object without its submodule attributes (they are
+    # still cached in `sys.modules`), which breaks string targets such as
+    # `httpcore2._async.connection_pool.AsyncPoolRequest`.
+    if loaded_httpx2 is not None and loaded_httpcore2 is not None:
+        sys.modules["httpx2"] = loaded_httpx2
+        sys.modules["httpcore2"] = loaded_httpcore2

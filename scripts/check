@@ -4,8 +4,8 @@ export SOURCE_FILES="src/httpx2 tests/httpx2 src/httpcore2 tests/httpcore2 bench
 
 set -x
 
-# uv.lock is locked for Python >= 3.10 (upstream); `--frozen` keeps `uv run`
-# from re-resolving for the backported 3.8/3.9 workspace range.
+# uv.lock is locked for Python >= 3.11 (upstream); `--frozen` keeps `uv run`
+# from re-resolving for the backported 3.8-3.10 workspace range.
 uv run --frozen ruff format --check --diff
 uv run --frozen mypy $SOURCE_FILES
 uv run --frozen ruff check

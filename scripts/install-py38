@@ -2,11 +2,11 @@
 
 set -x
 
-# Python 3.8/3.9 cannot use `uv sync --frozen` (uv.lock is locked for >= 3.10),
-# and several runtime dependencies have no PyPI release supporting these
-# interpreters. Install the py38deps backport wheels (same versions, widened
+# Python 3.8/3.9/3.10 cannot use `uv sync --frozen` (uv.lock is locked for
+# >= 3.11), and several runtime dependencies have no PyPI release supporting
+# 3.8/3.9. Install the py38deps backport wheels (same versions, widened
 # `requires-python`) from the py38deps package index, then the project and the
-# test dependencies explicitly. Linting and packaging are skipped for 3.8/3.9
+# test dependencies explicitly. Linting and packaging are skipped for 3.8-3.10
 # in CI.
 
 # The index only adds the wheels that PyPI cannot provide for 3.8/3.9. uv must
@@ -36,7 +36,7 @@ uv pip install --no-config \
 
 uv pip install -e "src/httpcore2[asyncio,trio,http2,socks]" -e "src/httpx2[brotli,http2,socks,ws,zstd]"
 
-# Test dependencies (versions compatible with 3.8/3.9).
+# Test dependencies (versions compatible with 3.8/3.9/3.10).
 # `brotlicffi` is pulled in by httpbin; pin 1.1.0.0 which ships wheels for 3.8.
 uv pip install "brotlicffi==1.1.0.0"
 uv pip install \
@@ -60,9 +60,17 @@ if [ "$(.venv/bin/python -c 'import sys; print(sys.version_info[1])')" = "8" ]; 
     # `websockets-sansio` implementation, added in 0.35); starlette and
     # cryptography are pinned to their last 3.8-compatible lines.
     uv pip install "starlette>=0.40,<0.41" "uvicorn>=0.33,<0.34" "cryptography>=44,<45"
-else
+elif [ "$(.venv/bin/python -c 'import sys; print(sys.version_info[1])')" = "9" ]; then
     # Python 3.9: upstream-compatible versions. pytest-codspeed (>= 3.9) is
     # needed here because the benchmark tests are only skipped on 3.8.
     uv pip install "starlette>=0.49,<1.0" "uvicorn>=0.35,<0.53" "cryptography>=49,<50"
     uv pip install "pytest-codspeed==3.2.0"
+else
+    # Python 3.10: the same versions the 3.11+ jobs get from uv.lock (starlette
+    # 1.6 and uvicorn 0.52 require 3.10, websockets 16 is the first 3.10-only
+    # line). pytest-codspeed (>= 3.9) is needed here because the benchmark tests
+    # are only skipped on 3.8.
+    uv pip install "starlette>=1.6,<2" "uvicorn>=0.52.4,<0.53" "cryptography>=50,<51"
+    uv pip install "websockets>=16.1.1,<17"
+    uv pip install "pytest-codspeed==5.0.3"
 fi
