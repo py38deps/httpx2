@@ -65,7 +65,9 @@ def test_request_attribute() -> None:
 
 
 @pytest.fixture
-def ragged_eof_tls_server(cert_authority: trustme.CA) -> typing.Iterator[int]:
+def ragged_eof_tls_server(  # pragma: no cover - only used by the test below
+    cert_authority: trustme.CA,
+) -> typing.Iterator[int]:
     server_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     cert_authority.issue_cert("localhost").configure_cert(server_context)
 
